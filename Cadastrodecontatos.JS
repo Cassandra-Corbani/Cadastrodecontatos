@@ -1,86 +1,119 @@
-let users = []
+let listaContatos = [];
 
-function addUserInList(user) {
-    const line          = document.createElement('tr');
-    const nameColun     = document.createElement('td');
-    const emailColun    = document.createElement('td');
-    const passwordColun = document.createElement('td');
 
-    nameColun.innerText     = user.name;
-    emailColun.innerText    = user.email;
-    passwordColun.innerText = user.password;
+function validarTelefone(telefone) {
 
-    line.appendChild(nameColun);
-    line.appendChild(emailColun);
-    line.appendChild(passwordColun);
-
-    const userList = document.getElementById('user-list');
-    userList.appendChild(line);
-}
-
-function readUsersData() {
-    const storage = JSON.parse(localStorage.getItem("users"))
-    userList      = storage ? storage : []
-
-    for (let user of userList) {
-        addUserInList(user)
+    
+    if (telefone.length === 10 || telefone.length === 11) {
+        return true; 
+    } else {
+        return false; 
     }
 }
 
-function registerUser() {
-    const mensage       = document.getElementById("mensage");
-    const nameInput     = document.getElementById("nameInput");
-    const emailInput    = document.getElementById("emailInput");
-    const passwordInput = document.getElementById("passwordInput");
+function adicionarContato() {
+    
+    const inputNome = document.getElementById('input_nome');
+    const inputTelefoneP = document.getElementById('input_telefone_principal');
+    const inputTelefoneS = document.getElementById('input_telefone_secundario');
 
-    const name     = nameInput.value;
-    const email    = emailInput.value;
-    const password = passwordInput.value;
-
-    const redColor     = "#e74c3c";
-    const greenColor   = "#27ae60";
-
-    if (!name) {
-        mensage.innerText           = "Necessário informar um nome.";
-        mensage.style.color         = redColor
-        nameInput.style.borderColor = redColor
-        return
+        if (!inputNome.value.trim()) {
+        alert("Por favor, insira um nome."); 
+        return; 
+    }
+    if (!inputTelefoneP.value.trim()) {
+        alert("Por favor, insira o telefone principal.");
+        return;
+    }
+    if (!inputTelefoneS.value.trim()) {
+        alert("Por favor, insira o telefone secundário.");
+        return;
     }
 
-    if (!email) {
-        mensage.innerText            = "Necessário informar um email.";
-        mensage.style.color          = redColor
-        emailInput.style.borderColor = redColor
-        return
+    
+    if (!validarTelefone(inputTelefoneP.value)) {
+        alert("O telefone principal deve ter 10 ou 11 dígitos.");
+        return;
+    }
+    if (!validarTelefone(inputTelefoneS.value)) {
+        alert("O telefone secundário deve ter 10 ou 11 dígitos.");
+        return;
     }
 
-    if (!password) {
-        mensage.innerText               = "Necessário informar uma senha.";
-        mensage.style.color             = redColor
-        passwordInput.style.borderColor = redColor
-        return
+    
+    for (const contato of listaContatos) {
+
+      
+        if (contato.telefonePrincipal === inputTelefoneP.value) {
+            alert("O telefone principal já está cadastrado.");
+            return; 
+        }
     }
 
-    const userData = {
-        'name':name, 
-        'email': email, 
-        'password': password
+  
+    const novoContato = {
+        nome: inputNome.value,
+        telefonePrincipal: inputTelefoneP.value,
+        telefoneSecundario: inputTelefoneS.value
     };
 
-    if (userData) {
-        addUserInList(userData)
-        users.push(userData)
-        localStorage.setItem("users", JSON.stringify(users))
+   
+    listaContatos.push(novoContato);
+    salvarContato();
 
-        mensage.innerText   = "Usuário cadastrado com sucesso!";
-        mensage.style.color = greenColor
+    
+    adicionarContatoNaTela(novoContato.nome, novoContato.telefonePrincipal, novoContato.telefoneSecundario);
+}
+
+
+function salvarContato() {
+
+
+    localStorage.setItem('listaDeContatos', JSON.stringify(listaContatos));
+}
+
+function carregarContatos() {
+
+    const armazenamento = localStorage.getItem('listaDeContatos');
+
+
+    listaContatos = armazenamento ? JSON.parse(armazenamento) : [];
+
+
+    for (const contato of listaContatos) {
+        adicionarContatoNaTela(contato.nome, contato.telefonePrincipal, contato.telefoneSecundario);
     }
 }
 
-function main() {
-    const registerButton = document.getElementById("button");
-    registerButton.addEventListener("click", registerUser);
-    readUsersData()
+function adicionarContatoNaTela(nome, telefone1, telefone2) {
+
+
+    const novaLinha = document.createElement("tr");
+
+
+    const colunaNome = document.createElement("td");
+    const colunaTelefonePrincipal = document.createElement("td");
+    const colunaTelefoneSecundario = document.createElement("td");
+
+    colunaNome.innerText = nome;
+    colunaTelefonePrincipal.innerText = telefone1;
+
+    novaLinha.appendChild(colunaNome);
+    novaLinha.appendChild(colunaTelefonePrincipal);
+    novaLinha.appendChild(colunaTelefoneSecundario);
+
+    const tabelaContatos = document.getElementById("tabela_contatos");
+    tabelaContatos.appendChild(novaLinha);
 }
 
-window.addEventListener("load", main);
+function configurarEventos() {
+    console.log("Página carregada");
+
+    carregarContatos();
+
+
+    const botaoAdicionar = document.getElementById('botao_adicionar');
+    botaoAdicionar.addEventListener('click', adicionarContato);
+}
+
+window.addEventListener('load', configurarEventos);
